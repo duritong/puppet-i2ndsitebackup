@@ -8,8 +8,9 @@ class DuplicityRunner
   include Singleton
 
   def run
-    while ( ! defined? nt || nt != first_target ) do
-      first_target ||= nt if defined? nt
+    nt = ft = nil
+    while (ft.nil? || nt != ft ) do
+      ft ||= nt
       nt = next_target
       puts nt['subtarget']
       exit unless system(command(target_id(nt['subtarget'])))
