@@ -34,7 +34,7 @@ class i2ndsitebackup::host(
   notifempty
   compress
   nocreate
-}\n"
+}\n",
       owner => root, group => 0, mode => 0644;
   }
 }
