@@ -21,10 +21,10 @@ class i2ndsitebackup::host(
       content => $ssh_keys[0],
       owner => root, group => 0, mode => 0400;
     '/etc/cron.d/run_2ndsite_backup':
-      content => "0 1 * * * root /opt/2ndsite_backup/2ndsite_backup &>> /var/log/2ndsite_backup.log\n",
+      content => "0 1 * * * root /opt/2ndsite_backup/2ndsite_backup 2>&1 >> /var/log/2ndsite_backup.log\n",
       owner => root, group => 0, mode => 0400;
     '/etc/cron.d/kill_2ndsite_backup':
-      content => "0 8 * * * root kill -9 `ps ax | grep 2ndsite_backup | grep -v grep | awk '{ print \$1 }'` &>> /var/log/2ndsite_backup_kill.log\n",
+      content => "0 8 * * * root kill -9 `ps ax | grep 2ndsite_backup | grep -v grep | awk '{ print \$1 }'` 2>&1 >> /var/log/2ndsite_backup_kill.log\n",
       owner => root, group => 0, mode => 0400;
     '/etc/logrotate.d/2ndsite_backup':
       content => "/var/log/2ndsite_backup*.log {
