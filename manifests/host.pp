@@ -24,7 +24,7 @@ class i2ndsitebackup::host(
       content => "0 1 * * * root /opt/2ndsite_backup/2ndsite_backup >> /var/log/2ndsite_backup.log\n",
       owner => root, group => 0, mode => 0400;
     '/etc/cron.d/kill_2ndsite_backup':
-      content => "0 8 * * * root pids=\$(ps ax | grep 2ndsite_backup | grep -v grep | awk '{ print \$1 }'); for pid in \$pids; do kill -9 \$pid; done >> /var/log/2ndsite_backup_kill.log\n"
+      content => "0 8 * * * root pids=\$(ps ax | grep 2ndsite_backup | grep -v grep | awk '{ print \$1 }'); for pid in \$pids; do kill -9 \$pid; done >> /var/log/2ndsite_backup_kill.log\n",
       owner => root, group => 0, mode => 0400;
     '/etc/logrotate.d/2ndsite_backup':
       content => "/var/log/2ndsite_backup*.log {
