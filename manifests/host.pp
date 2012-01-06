@@ -12,7 +12,7 @@ class i2ndsitebackup::host(
       ensure => directory,
       owner => root, group => 0, mode => 0600;
     '/opt/2ndsite_backup/2ndsite_backup':
-      source => 'puppet:///modules/i2ndsitebackup/2ndsite_backup',
+      source => 'puppet:///modules/i2ndsitebackup/2ndsite_backup.rb',
       owner => root, group => 0, mode => 0500;
     '/opt/2ndsite_backup/options.yml':
       content => $config_content,

@@ -24,7 +24,9 @@ class DuplicityRunner
 
   def command(target)
     "ssh -i /opt/2ndsite_backup/duplicity_key #{options['target_user']}@#{options['target_host']} mkdir -p #{File.join(options['target_root'],target)};"+
-    "PASSPHRASE=\"#{options['passphrase']}\" duplicity --ssh-options '-oIdentityFile=/opt/2ndsite_backup/duplicity_key' --encrypt-key #{options['gpg_key']} --sign-key #{options['gpg_key']} #{File.join(options['source_root'],target)} ssh://#{options['target_user']}@#{options['target_host']}/#{File.join(options['target_root'],target)}"
+    "PASSPHRASE=\"#{options['passphrase']}\" duplicity cleanup --extra-clean --force --ssh-options '-oIdentityFile=/opt/2ndsite_backup/duplicity_key' --encrypt-key #{options['gpg_key']} --sign-key #{options['gpg_key']} ssh://#{options['target_user']}@#{options['target_host']}/#{File.join(options['target_root'],target)};" +
+    "PASSPHRASE=\"#{options['passphrase']}\" duplicity remove-all-but-n-full 2 --force --ssh-options '-oIdentityFile=/opt/2ndsite_backup/duplicity_key' --encrypt-key #{options['gpg_key']} --sign-key #{options['gpg_key']} ssh://#{options['target_user']}@#{options['target_host']}/#{File.join(options['target_root'],target)};" +
+    "PASSPHRASE=\"#{options['passphrase']}\" duplicity --full-if-older-than 60D --ssh-options '-oIdentityFile=/opt/2ndsite_backup/duplicity_key' --encrypt-key #{options['gpg_key']} --sign-key #{options['gpg_key']} #{File.join(options['source_root'],target)} ssh://#{options['target_user']}@#{options['target_host']}/#{File.join(options['target_root'],target)}"
   end
 
 
@@ -37,9 +39,7 @@ class DuplicityRunner
   end
 
   def next_target
-    return first_target unless File.exist?('/opt/2ndsite_backup/state.yml')
-    ls = last_state
-    return first_target unless defined? ls['target']
+    return first_target if !File.exist?('/opt/2ndsite_backup/state.yml') || (ls = last_state)['target'].nil?
     stargets = subtargets(ls['target'])
     index = stargets.index(ls['subtarget'])
     if index && n_subtarget=stargets[index+1]
