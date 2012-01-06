@@ -15,6 +15,7 @@ class DuplicityRunner
       puts nt['subtarget']
       exit unless system(command(target_id(nt['subtarget'])))
       store_target(nt)
+      exit if Time.now.hour > (options['stop_hour']||17).to_i
     end
   end
 
