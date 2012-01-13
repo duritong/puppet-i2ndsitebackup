@@ -12,7 +12,7 @@ class DuplicityRunner
     while (ft.nil? || nt != ft ) do
       ft ||= nt
       nt = next_target
-      puts nt['subtarget']
+      puts "#{Time.now} #{nt['subtarget']}"
       exit unless system(command(target_id(nt['subtarget'])))
       store_target(nt)
       exit if Time.now.hour > (options['stop_hour']||17).to_i
