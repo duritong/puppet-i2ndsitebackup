@@ -23,11 +23,15 @@ class DuplicityRunner
     target.sub("#{options['source_root']}/",'')
   end
 
+  def archive_dir
+    options['archive_dir'] ?  "--archive-dir #{options['archive_dir']} " : ''
+  end
+
   def command(target)
     "ssh -i /opt/2ndsite_backup/duplicity_key #{options['target_user']}@#{options['target_host']} mkdir -p #{File.join(options['target_root'],target)};"+
-    "PASSPHRASE=\"#{options['passphrase']}\" duplicity cleanup --extra-clean --force --ssh-options '-oIdentityFile=/opt/2ndsite_backup/duplicity_key' --encrypt-key #{options['gpg_key']} --sign-key #{options['gpg_key']} ssh://#{options['target_user']}@#{options['target_host']}/#{File.join(options['target_root'],target)};" +
-    "PASSPHRASE=\"#{options['passphrase']}\" duplicity remove-all-but-n-full 2 --force --ssh-options '-oIdentityFile=/opt/2ndsite_backup/duplicity_key' --encrypt-key #{options['gpg_key']} --sign-key #{options['gpg_key']} ssh://#{options['target_user']}@#{options['target_host']}/#{File.join(options['target_root'],target)};" +
-    "PASSPHRASE=\"#{options['passphrase']}\" duplicity --full-if-older-than 60D --ssh-options '-oIdentityFile=/opt/2ndsite_backup/duplicity_key' --encrypt-key #{options['gpg_key']} --sign-key #{options['gpg_key']} #{File.join(options['source_root'],target)} ssh://#{options['target_user']}@#{options['target_host']}/#{File.join(options['target_root'],target)}"
+    "PASSPHRASE=\"#{options['passphrase']}\" duplicity cleanup #{archive_dir}--extra-clean --force --ssh-options '-oIdentityFile=/opt/2ndsite_backup/duplicity_key' --encrypt-key #{options['gpg_key']} --sign-key #{options['gpg_key']} ssh://#{options['target_user']}@#{options['target_host']}/#{File.join(options['target_root'],target)};" +
+    "PASSPHRASE=\"#{options['passphrase']}\" duplicity remove-all-but-n-full 2 #{archive_dir}--force --ssh-options '-oIdentityFile=/opt/2ndsite_backup/duplicity_key' --encrypt-key #{options['gpg_key']} --sign-key #{options['gpg_key']} ssh://#{options['target_user']}@#{options['target_host']}/#{File.join(options['target_root'],target)};" +
+    "PASSPHRASE=\"#{options['passphrase']}\" duplicity #{archive_dir}--full-if-older-than 60D --ssh-options '-oIdentityFile=/opt/2ndsite_backup/duplicity_key' --encrypt-key #{options['gpg_key']} --sign-key #{options['gpg_key']} #{File.join(options['source_root'],target)} ssh://#{options['target_user']}@#{options['target_host']}/#{File.join(options['target_root'],target)}"
   end
 
 
