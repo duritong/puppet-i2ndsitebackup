@@ -8,14 +8,32 @@ class DuplicityRunner
   include Singleton
 
   def run
+    if File.exist?(lockfile)
+      pid = File.read(lockfile).chomp
+      if File.directory?("/proc/#{pid}")
+        STDERR.puts "Lockfile #{lockfile} exists with pid #{pid} and this process still seems to be running"
+        exit 1
+      else
+        puts "Removing staled lockfile #{lockfile}"
+      end
+    end
+    begin
+      File.open(lockfile,'w'){|f| f << $$ }
+      run_targets
+    ensure
+      File.delete(lockfile)
+    end
+  end
+  private
+  def run_targets
     nt = ft = nil
     while (ft.nil? || nt != ft ) do
       ft ||= nt
       nt = next_target
       puts "#{Time.now} #{nt['subtarget']}"
-      exit unless system(command(target_id(nt['subtarget'])))
+      break unless system(command(target_id(nt['subtarget'])))
       store_target(nt)
-      exit if Time.now.hour > (options['stop_hour']||17).to_i
+      break if Time.now.hour > (options['stop_hour']||17).to_i
     end
   end
 
@@ -73,6 +91,10 @@ class DuplicityRunner
 
   def targets
     options['targets']
+  end
+
+  def lockfile
+    @lockfile ||= '/opt/2ndsite_backup/run.lock'
   end
 end
 
