@@ -17,6 +17,9 @@ class i2ndsitebackup::host(
     '/opt/2ndsite_backup/options.yml':
       content => $config_content,
       owner => root, group => 0, mode => 0400;
+    '/opt/2ndsite_backup/soft_failing_targets.yml':
+      ensure => present,
+      owner => root, group => 0, mode => 0400;
     '/opt/2ndsite_backup/duplicity_key':
       content => $ssh_keys[0],
       owner => root, group => 0, mode => 0400;

@@ -102,7 +102,7 @@ class DuplicityRunner
   end
 
   def load_soft_failing_targets
-    file = '/opt/2ndsite_backup/soft_failing_targets.yaml'
+    file = '/opt/2ndsite_backup/soft_failing_targets.yml'
     (File.exists?(file) ? YAML.load_file(file) : nil) || []
   end
 end
