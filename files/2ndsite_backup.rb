@@ -31,7 +31,7 @@ class DuplicityRunner
       ft ||= nt
       nt = next_target
       puts "#{Time.now} #{nt['subtarget']}"
-      break unless system(command(target_id(nt['subtarget'])))
+      break if !system(command(target_id(nt['subtarget']))) && !soft_failing_targets.include(nt['subtarget'])
       store_target(nt)
       break if Time.now.hour > (options['stop_hour']||17).to_i
     end
@@ -95,6 +95,15 @@ class DuplicityRunner
 
   def lockfile
     @lockfile ||= '/opt/2ndsite_backup/run.lock'
+  end
+
+  def soft_failing_targets
+    @soft_failing_targets ||= load_soft_failing_targets
+  end
+
+  def load_soft_failing_targets
+    file = '/opt/2ndsite_backup/soft_failing_targets.yaml'
+    (File.exists?(file) ? YAML.load_file(file) : nil) || []
   end
 end
 
