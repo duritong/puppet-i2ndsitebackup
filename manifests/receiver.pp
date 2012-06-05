@@ -1,7 +1,7 @@
 class i2ndsitebackup::receiver(
   $user_password,
   $source_host,
-  $ssh_key_basepath = "/etc/puppet/modules/site-securefile/files"
+  $ssh_key_basepath = "/etc/puppet/modules/site_securefile/files"
 ){
 
   require cryptsetup

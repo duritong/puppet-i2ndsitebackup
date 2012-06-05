@@ -1,12 +1,12 @@
 class i2ndsitebackup::host(
   $config_content,
-  $ssh_key_basepath = "/etc/puppet/modules/site-securefile/files"
+  $ssh_key_basepath = "/etc/puppet/modules/site_securefile/files"
 ){
   require gpg 
   require duplicity
   require logrotate
 
-  $ssh_keys = ssh_keygen("${$ssh_key_basepath}/i2ndsitebackup/keys/${fqdn}/duplicity")
+  $ssh_keys = ssh_keygen("${$ssh_key_basepath}/i2ndsitebackup/keys/${::fqdn}/duplicity")
   file{
     '/opt/2ndsite_backup':
       ensure => directory,
