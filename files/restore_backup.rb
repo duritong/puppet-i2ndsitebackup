@@ -18,6 +18,6 @@ system("PASSPHRASE='#{options['passphrase']}' duplicity restore --restore-time #
 if $?.to_i > 0
   puts "A failure happened!"
 else
-  puts "Done! You find your backup in $TRAGET"
+  puts "Done! You find your restored backup in #{target}"
 end
 exit $?.to_i
