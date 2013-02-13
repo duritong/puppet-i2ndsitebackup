@@ -19,6 +19,11 @@ class i2ndsitebackup::host(
       owner   => root,
       group   => 0,
       mode    => '0500';
+    '/opt/2ndsite_backup/restore_backup':
+      source  => 'puppet:///modules/i2ndsitebackup/restore_backup.rb',
+      owner   => root,
+      group   => 0,
+      mode    => '0500';
     '/opt/2ndsite_backup/options.yml':
       content => $config_content,
       owner   => root,
