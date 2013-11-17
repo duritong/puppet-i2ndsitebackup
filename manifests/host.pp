@@ -51,7 +51,7 @@ class i2ndsitebackup::host(
   missingok
   notifempty
   compress
-  nocreate
+  copytruncate
 }\n",
       owner   => root,
       group   => 0,
