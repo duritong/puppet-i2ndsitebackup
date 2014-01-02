@@ -1,6 +1,7 @@
 # all the things needed on the pushing host
 class i2ndsitebackup::host(
   $config_content,
+  $cron_start_time  = '0 7 * * *',
   $ssh_key_basepath = '/etc/puppet/modules/site_securefile/files'
 ){
   require gpg
@@ -40,7 +41,7 @@ class i2ndsitebackup::host(
       group   => 0,
       mode    => '0400';
     '/etc/cron.d/run_2ndsite_backup':
-      content => "0 1 * * * root /opt/2ndsite_backup/2ndsite_backup >> /var/log/2ndsite_backup.log\n",
+      content => "${cron_start_time} root /opt/2ndsite_backup/2ndsite_backup >> /var/log/2ndsite_backup.log\n",
       owner   => root,
       group   => 0,
       mode    => '0400';

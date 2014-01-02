@@ -33,7 +33,7 @@ class DuplicityRunner
       puts "#{Time.now} #{nt['subtarget']}"
       break if !system(command(target_id(nt['subtarget']))) && !soft_failing_targets.include?(nt['subtarget'])
       store_target(nt)
-      break if Time.now.hour > (options['stop_hour']||17).to_i
+      break if Time.now.hour > (options['stop_hour']||23).to_i
     end
   end
 
