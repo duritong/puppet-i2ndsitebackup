@@ -31,7 +31,13 @@ class DuplicityRunner
       ft ||= nt
       nt = next_target
       puts "#{Time.now} #{nt['subtarget']}"
-      break if !system(command(target_id(nt['subtarget']))) && !soft_failing_targets.include?(nt['subtarget'])
+      res = false
+      with_environment('PASSPHRASE' => options['passphrase'])
+        commands(target_id(nt['subtarget'])).each do |cmd|
+          res = system(cmd)
+        end
+      end
+      break if !res && !soft_failing_targets.include?(nt['subtarget'])
       store_target(nt)
       break if Time.now.hour >= (options['stop_hour']||23).to_i
     end
@@ -45,11 +51,17 @@ class DuplicityRunner
     options['archive_dir'] ?  "--archive-dir #{options['archive_dir']} " : ''
   end
 
-  def command(target)
-    "ssh -i /opt/2ndsite_backup/duplicity_key #{options['target_user']}@#{options['target_host']} mkdir -p #{File.join(options['target_root'],target)};"+
-    "PASSPHRASE=\"#{options['passphrase']}\" duplicity cleanup #{archive_dir}--extra-clean --force --ssh-options '-oIdentityFile=/opt/2ndsite_backup/duplicity_key' --encrypt-key #{options['gpg_key']} --sign-key #{options['gpg_key']} ssh://#{options['target_user']}@#{options['target_host']}/#{File.join(options['target_root'],target)};" +
-    "PASSPHRASE=\"#{options['passphrase']}\" duplicity remove-all-but-n-full 2 #{archive_dir}--force --ssh-options '-oIdentityFile=/opt/2ndsite_backup/duplicity_key' --encrypt-key #{options['gpg_key']} --sign-key #{options['gpg_key']} ssh://#{options['target_user']}@#{options['target_host']}/#{File.join(options['target_root'],target)};" +
-    "PASSPHRASE=\"#{options['passphrase']}\" duplicity #{archive_dir}--full-if-older-than 120D --ssh-options '-oIdentityFile=/opt/2ndsite_backup/duplicity_key' --encrypt-key #{options['gpg_key']} --sign-key #{options['gpg_key']} #{File.join(options['source_root'],target)} ssh://#{options['target_user']}@#{options['target_host']}/#{File.join(options['target_root'],target)}"
+  def commands(target)
+    tu = options['target_user']
+    th = options['target_host']
+    td = File.join(options['target_root'],target)
+    ts = "ssh://#{tu}@#{th}/#{td}"
+    du = "--ssh-options '-oIdentityFile=/opt/2ndsite_backup/duplicity_key' --encrypt-key #{options['gpg_key']} --sign-key #{options['gpg_key']}"
+    [ "ssh -i /opt/2ndsite_backup/duplicity_key #{tu}@#{th} 'test -d #{td} || mkdir -p #{td}'",
+      "duplicity cleanup #{archive_dir}--extra-clean --force #{du} #{ts}",
+      "duplicity remove-all-but-n-full 2 #{archive_dir}--force #{du} #{ts}",
+      "duplicity #{archive_dir}--full-if-older-than 120D #{du} #{File.join(options['source_root'],target)} #{ts}",
+    ]
   end
 
 
@@ -104,6 +116,20 @@ class DuplicityRunner
   def load_soft_failing_targets
     file = '/opt/2ndsite_backup/soft_failing_targets.yml'
     (File.exists?(file) ? YAML.load_file(file) : nil) || []
+  end
+  def with_environment(variables={})
+    if block_given?
+      old_values = variables.map{ |k,v| [k,ENV[k]] }
+      begin
+         variables.each{ |k,v| ENV[k] = v }
+         result = yield
+      ensure
+        old_values.each{ |k,v| ENV[k] = v }
+      end
+      result
+    else
+      variables.each{ |k,v| ENV[k] = v }
+    end
   end
 end
 
