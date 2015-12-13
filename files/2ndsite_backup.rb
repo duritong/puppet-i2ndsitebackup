@@ -32,7 +32,7 @@ class DuplicityRunner
       nt = next_target
       puts "#{Time.now} #{nt['subtarget']}"
       res = false
-      with_environment('PASSPHRASE' => options['passphrase'])
+      with_environment('PASSPHRASE' => options['passphrase']) do
         commands(target_id(nt['subtarget'])).each do |cmd|
           res = system(cmd)
         end
@@ -85,7 +85,7 @@ class DuplicityRunner
         return {'target' => n_target, 'subtarget' => subtargets(n_target).first }
       else
         return first_target
-      end 
+      end
     end
   end
 
@@ -117,6 +117,7 @@ class DuplicityRunner
     file = '/opt/2ndsite_backup/soft_failing_targets.yml'
     (File.exists?(file) ? YAML.load_file(file) : nil) || []
   end
+
   def with_environment(variables={})
     if block_given?
       old_values = variables.map{ |k,v| [k,ENV[k]] }
