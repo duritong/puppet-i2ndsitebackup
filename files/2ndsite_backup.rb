@@ -58,7 +58,11 @@ class DuplicityRunner
     ssh_port ||= '22'
     td = File.join(options['target_root'],target)
     ts = "ssh://#{tu}@#{th}/#{td}"
-    du = "--ssh-options '-oIdentityFile=/opt/2ndsite_backup/duplicity_key' --encrypt-key #{options['gpg_key']} --sign-key #{options['gpg_key']}"
+    # TODO:
+    # we go with the "legacy" pexpect ssh backend as we are hitting a paramiko bug:
+    # https://github.com/paramiko/paramiko/issues/151
+    # Verify whether this is fixed at some point
+    du = "--ssh-backend pexpect --ssh-options '-oIdentityFile=/opt/2ndsite_backup/duplicity_key' --encrypt-key #{options['gpg_key']} --sign-key #{options['gpg_key']}"
     [ "ssh -i /opt/2ndsite_backup/duplicity_key -p #{ssh_port} #{tu}@#{ssh_host} 'test -d #{td} || mkdir -p #{td}'",
       "duplicity cleanup #{archive_dir}--extra-clean --force #{du} #{ts}",
       "duplicity remove-all-but-n-full 2 #{archive_dir}--force #{du} #{ts}",
