@@ -65,8 +65,8 @@ class DuplicityRunner
     # Verify whether this is fixed at some point
     # 2nd) round: the parmiko bug might have been triggered by a fw rule, where
     # disabling helped. To be removed once everything seems to work.
-    #du = "--ssh-backend pexpect"
-    du = "--ssh-options '-oIdentityFile=/opt/2ndsite_backup/duplicity_key' --encrypt-key #{options['gpg_key']} --sign-key #{options['gpg_key']}"
+    du = "--ssh-backend pexpect "
+    du += "--ssh-options '-oIdentityFile=/opt/2ndsite_backup/duplicity_key' --encrypt-key #{options['gpg_key']} --sign-key #{options['gpg_key']}"
     [ "ssh -i /opt/2ndsite_backup/duplicity_key -p #{ssh_port} #{tu}@#{ssh_host} 'test -d #{td} || mkdir -p #{td}'",
       "duplicity cleanup #{archive_dir}--extra-clean --force #{du} #{ts}",
       "duplicity remove-all-but-n-full 2 #{archive_dir}--force #{du} #{ts}",
