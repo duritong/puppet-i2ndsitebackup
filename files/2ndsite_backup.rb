@@ -68,7 +68,7 @@ class DuplicityRunner
     # However, we can't do it all the time as folders starting with open
     # will fail on that backend:
     # https://bugs.launchpad.net/duplicity/+bug/933388
-    if target =~ /^open/
+    if target.split('/').last =~ /^open/
       du = ''
     else
       du = "--ssh-backend pexpect "
