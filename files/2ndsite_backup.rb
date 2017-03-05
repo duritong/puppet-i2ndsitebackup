@@ -31,10 +31,10 @@ class DuplicityRunner
       ft ||= nt
       nt = next_target
       puts "#{Time.now} #{nt['subtarget']}"
-      res = false
+      res = true
       with_environment('PASSPHRASE' => options['passphrase']) do
         commands(target_id(nt['subtarget'])).each do |cmd|
-          res = system(cmd)
+          res = res && system(cmd)
         end
       end
       break if !res && !soft_failing_targets.include?(nt['subtarget'])
@@ -57,7 +57,7 @@ class DuplicityRunner
     ssh_host, ssh_port = th.split(':',2)
     ssh_port ||= '22'
     td = File.join(options['target_root'],target)
-    ts = "ssh://#{tu}@#{th}/#{td}"
+    ts = "scp://#{tu}@#{th}/#{td}"
     du = "--ssh-options '-oIdentityFile=/opt/2ndsite_backup/duplicity_key' --encrypt-key #{options['gpg_key']} --sign-key #{options['gpg_key']}"
     [ "ssh -i /opt/2ndsite_backup/duplicity_key -p #{ssh_port} #{tu}@#{ssh_host} 'test -d #{td} || mkdir -p #{td}'",
       "duplicity cleanup #{archive_dir}--extra-clean --force #{du} #{ts}",
