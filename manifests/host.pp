@@ -1,14 +1,15 @@
 # all the things needed on the pushing host
 class i2ndsitebackup::host(
-  $config_content,
-  $cron_start_time  = '0 7 * * *',
-  $ssh_key_basepath = '/etc/puppet/modules/site_securefile/files'
+  $config,
+  $cron_start_time  = '0 5 * * *',
+  $key_basepath = '/etc/puppet/modules/site_securefile/files'
 ){
   require gpg
   require duplicity
   require logrotate
 
-  $ssh_keys = ssh_keygen("${$ssh_key_basepath}/i2ndsitebackup/keys/${::fqdn}/duplicity")
+  $key_path = "${$key_basepath}/i2ndsitebackup/keys/${fqdn}"
+  $ssh_keys = ssh_keygen("${key_path}/duplicity")
   file{
     '/opt/2ndsite_backup':
       ensure  => directory,
@@ -26,7 +27,7 @@ class i2ndsitebackup::host(
       group   => 0,
       mode    => '0500';
     '/opt/2ndsite_backup/options.yml':
-      content => $config_content,
+      content => template('i2ndsitebackup/options.yml.erb'),
       owner   => root,
       group   => 0,
       mode    => '0400';
@@ -57,5 +58,42 @@ class i2ndsitebackup::host(
       owner   => root,
       group   => 0,
       mode    => '0644';
+    '/root/.gnupg':
+      ensure => directory,
+      owner  => root,
+      group  => 0,
+      mode   => '0600';
+    "/root/.gnupg/${config['gpg_key']}.pub":
+      content => file("${key_path}/${config['gpg_key']}.pub"),
+      owner   => root,
+      group   => 0,
+      mode    => '0600';
+    "/root/.gnupg/${config['gpg_key']}.priv":
+      content => file("${key_path}/${config['gpg_key']}.priv"),
+      owner  => root,
+      group  => 0,
+      mode   => '0600';
   }
+  exec{
+    "import_pub_${config['gpg_key']}":
+      command     => "gpg --import < /root/.gnupg/${config['gpg_key']}.pub",
+      refreshonly => true,
+      returns     => [0,2],
+      subscribe   => File["/root/.gnupg/${config['gpg_key']}.pub"];
+    "import_priv_${config['gpg_key']}":
+      command     => "gpg --import < /root/.gnupg/${config['gpg_key']}.priv",
+      refreshonly => true,
+      returns     => [0,2],
+      subscribe   => File["/root/.gnupg/${config['gpg_key']}.priv"];
+  }
+  include ::clamav::backup_webhosting_scan
+  include ::ibackup::disks
+  disks::lv_mount{
+    'duplicity_archive':
+      folder  => $config['archive_dir'],
+      size    => pick($config['archive_size'],'20G'),
+      mode    => '0700',
+      require => File['/data'],
+  }
+
 }
