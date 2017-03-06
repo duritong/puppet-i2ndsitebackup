@@ -94,6 +94,12 @@ class i2ndsitebackup::host(
       size    => pick($config['archive_size'],'20G'),
       mode    => '0700',
       require => File['/data'],
+  } -> file{
+    "${config['archive_dir']}/tmp":
+      ensure => directory,
+      owner  => root,
+      group  => 0,
+      mode   => '0600',
   }
 
 }

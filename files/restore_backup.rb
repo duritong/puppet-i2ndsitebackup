@@ -14,7 +14,7 @@ time=ARGV.shift
 target = File.join('/tmp',File.basename(src))
 
 puts "Starting restore..."
-system("PASSPHRASE='#{options['passphrase']}' duplicity restore --restore-time #{time} --ssh-options '-oIdentityFile=/opt/2ndsite_backup/duplicity_key' --encrypt-key #{options['gpg_key']} --sign-key #{options['gpg_key']} ssh://#{options['target_user']}@#{options['target_host']}/#{options['target_root']}/#{src}/ #{target}")
+system("PASSPHRASE='#{options['passphrase']}' duplicity restore --restore-time #{time} --ssh-options '-oIdentityFile=/opt/2ndsite_backup/duplicity_key' --encrypt-key #{options['gpg_key']} --sign-key #{options['gpg_key']} rsync://#{options['target_user']}@#{options['target_host']}/#{options['target_root']}/#{src}/ #{target}")
 if $?.to_i > 0
   puts "A failure happened!"
 else

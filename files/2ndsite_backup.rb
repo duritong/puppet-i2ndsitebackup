@@ -57,10 +57,9 @@ class DuplicityRunner
     ssh_host, ssh_port = th.split(':',2)
     ssh_port ||= '22'
     td = File.join(options['target_root'],target)
-    ts = "scp://#{tu}@#{th}/#{td}"
-    du = "--ssh-options '-oIdentityFile=/opt/2ndsite_backup/duplicity_key' --encrypt-key #{options['gpg_key']} --sign-key #{options['gpg_key']}"
-    [ "ssh -i /opt/2ndsite_backup/duplicity_key -p #{ssh_port} #{tu}@#{ssh_host} 'test -d #{td} || mkdir -p #{td}'",
-      "duplicity cleanup #{archive_dir}--extra-clean --force #{du} #{ts}",
+    ts = "rsync://#{tu}@#{th}/#{td}"
+    du = "--ssh-options '-oIdentityFile=/opt/2ndsite_backup/duplicity_key' --encrypt-key #{options['gpg_key']} --sign-key #{options['gpg_key']} --tempdir /data/duplicity_archive/tmp"
+    [ "duplicity cleanup #{archive_dir}--extra-clean --force #{du} #{ts}",
       "duplicity remove-all-but-n-full 2 #{archive_dir}--force #{du} #{ts}",
       "duplicity #{archive_dir}--full-if-older-than 120D #{du} #{File.join(options['source_root'],target)} #{ts}",
     ]
