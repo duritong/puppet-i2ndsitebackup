@@ -5,7 +5,6 @@ class i2ndsitebackup::receiver(
   $ssh_key_basepath = '/etc/puppet/modules/site_securefile/files'
 ){
 
-  require cryptsetup
   require rsync::client
 
   user::managed{
