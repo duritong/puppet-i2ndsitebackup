@@ -29,8 +29,8 @@ class i2ndsitebackup::receiver(
   }
 
   mount{'sndsite_disk':
+    name    => '/srv/backup',
     device  => '/dev/mapper/2ndsite_backup',
-    target  => '/srv/backup',
     fstype  => 'ext4',
     options => 'defaults,noexec,nodev,noauto',
     require => File['/srv/backup'],
