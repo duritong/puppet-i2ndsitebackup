@@ -9,8 +9,8 @@ class i2ndsitebackup::receiver(
 
   user::managed{
     'sndsite':
-      password  => $user_password,
-      sshkey    => 'i2ndsitebackup::receiver::sshkeys',
+      password => $user_password,
+      sshkey   => 'i2ndsitebackup::receiver::sshkeys',
   }
 
   group{'backup': ensure => present }
@@ -22,10 +22,10 @@ class i2ndsitebackup::receiver(
 
 
   file{'/srv/backup':
-    ensure  => directory,
-    owner   => sndsite,
-    group   => 0,
-    mode    => '0600';
+    ensure => directory,
+    owner  => sndsite,
+    group  => 0,
+    mode   => '0600';
   }
 
   mount{'sndsite_disk':
