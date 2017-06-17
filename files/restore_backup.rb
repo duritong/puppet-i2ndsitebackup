@@ -15,12 +15,12 @@ target = File.join('/tmp',File.basename(src))
 archive_dir = options['archive_dir'] ?  "--archive-dir #{options['archive_dir']} " : ''
 
 puts "Starting restore..."
-old_values = variables.map{ |k,v| [k,ENV[k]] }
+old_value = ENV['PASSPHRASE']
 begin
  ENV['PASSPHRASE'] = options['passphrase']
  system("duplicity restore #{archive_dir}--restore-time #{time} --ssh-options '-oIdentityFile=/opt/2ndsite_backup/duplicity_key' --encrypt-key #{options['gpg_key']} --sign-key #{options['gpg_key']} rsync://#{options['target_user']}@#{options['target_host']}/#{options['target_root']}/#{src}/ #{target}")
 ensure
-  old_values.each{ |k,v| ENV[k] = v }
+  ENV['PASSPHRASE'] = old_value
 end
 if $?.to_i > 0
   puts "A failure happened!"
