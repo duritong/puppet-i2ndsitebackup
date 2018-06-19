@@ -19,6 +19,7 @@ class DuplicityRunner
     end
     begin
       File.open(lockfile,'w'){|f| f << $$ }
+      cleanup_archive
       run_targets
     ensure
       File.delete(lockfile)
@@ -50,6 +51,12 @@ class DuplicityRunner
   def archive_dir
     options['archive_dir'] ?  "--archive-dir #{options['archive_dir']} " : ''
   end
+  def cleanup_archive
+    if options['archive_dir']
+      puts "Cleaning up archive_dir #{options['archive_dir']}"
+      system("tmpwatch -m #{options['incremental_days'].to_i*options['full_count'].to_i + 1}d #{options['archive_dir']}")
+    end
+  end
 
   def commands(target)
     tu = options['target_user']
@@ -64,14 +71,14 @@ class DuplicityRunner
     # ready
     [ "ssh -i /opt/2ndsite_backup/duplicity_key -p #{ssh_port} #{tu}@#{ssh_host} '(test -d #{tdp} || mkdir #{tdp}) && (test -d #{td} || mkdir #{td})'",
       "duplicity cleanup #{archive_dir}--extra-clean --force #{du} #{ts}",
-      "duplicity remove-all-but-n-full 2 #{archive_dir}--force #{du} #{ts}",
-      "duplicity #{archive_dir}--full-if-older-than 120D #{du} #{File.join(options['source_root'],target)} #{ts}",
+      "duplicity remove-all-but-n-full #{options['full_count']} #{archive_dir}--force #{du} #{ts}",
+      "duplicity #{archive_dir}--full-if-older-than #{options['incremental_days']}D #{du} #{File.join(options['source_root'],target)} #{ts}",
     ]
   end
 
 
   def options
-    @options ||= YAML.load(File.read('/opt/2ndsite_backup/options.yml'))
+    @options ||= YAML.load_file('/opt/2ndsite_backup/options.yml')
   end
 
   def subtargets(target)
@@ -99,7 +106,7 @@ class DuplicityRunner
   end
 
   def last_state
-    YAML.load(File.read('/opt/2ndsite_backup/state.yml'))
+    YAML.load_file('/opt/2ndsite_backup/state.yml')
   end
 
   def store_target(target)
