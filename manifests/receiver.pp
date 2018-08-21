@@ -34,5 +34,11 @@ class i2ndsitebackup::receiver(
     fstype  => 'ext4',
     options => 'defaults,noexec,nodev,noauto',
     require => File['/srv/backup'],
+  } -> file{
+    '/etc/cron.monthly/backup_cleanup.sh':
+      source => 'puppet:///modules/i2ndsitebackup/cleanup_receiver',
+      owner  => root,
+      group  => 0,
+      mode   => '0700',
   }
 }
