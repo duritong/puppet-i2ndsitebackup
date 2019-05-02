@@ -88,18 +88,23 @@ class i2ndsitebackup::host(
   }
   include ::clamav::backup_webhosting_scan
   include ::ibackup::disks
-  disks::lv_mount{
+  selinux::fcontext{
+    "${config['archive_dir']}(/.*)?":
+      setype => 'tmp_t',
+  } -> disks::lv_mount{
     'duplicity_archive':
       folder  => $config['archive_dir'],
       size    => pick($config['archive_size'],'20G'),
       mode    => '0700',
+      seltype => 'tmp_t',
       require => File['/data'],
   } -> file{
     "${config['archive_dir']}/tmp":
-      ensure => directory,
-      owner  => root,
-      group  => 0,
-      mode   => '0600',
+      ensure  => directory,
+      owner   => root,
+      group   => 0,
+      mode    => '0600',
+      seltype => 'tmp_t',
   }
 
 }
