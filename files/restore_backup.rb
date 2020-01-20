@@ -13,7 +13,7 @@ src=ARGV.shift
 time=ARGV.shift
 if options['archive_dir']
   target = File.join(File.join(options['archive_dir'],'restore'),File.basename(src))
-  archive_dir = "--archive-dir #{options['archive_dir']} "
+  archive_dir = "--archive-dir #{options['archive_dir']} --tempdir #{File.join(options['archive_dir'],'tmp')} "
 else
   target = File.join('/tmp',File.basename(src))
   archive_dir = ''

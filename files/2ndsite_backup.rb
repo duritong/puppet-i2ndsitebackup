@@ -49,7 +49,7 @@ class DuplicityRunner
   end
 
   def archive_dir
-    options['archive_dir'] ?  "--archive-dir #{options['archive_dir']} " : ''
+    options['archive_dir'] ?  "--archive-dir #{options['archive_dir']} --tempdir #{File.join(options['archive_dir'],'tmp')} " : ''
   end
   def cleanup_archive
     if options['archive_dir']
