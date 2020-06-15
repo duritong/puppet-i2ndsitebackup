@@ -1,5 +1,7 @@
 # things to be setup on the pushing host
 class i2ndsitebackup::receiver(
+  Stdlib::Fqdn
+    $source_host,
   String
     $user_password,
   Stdlib::Unixpath
