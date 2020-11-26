@@ -4,7 +4,7 @@ gpg_key: '<%= @config['gpg_key'] %>'
 passphrase: '<%= @config['gpg_passphrase'] %>'
 source_root: '<%= @config['source_root'] %>'
 hosts:
-<% @config['hosts'].keys.sort do |host| -%>
+<% @config['hosts'].keys.sort.each do |host| -%>
   '<%= host %>':
     root: '<%= @config['hosts'][host]['root'] %>'
     user: '<%= @config['hosts'][host]['user'] %>'
