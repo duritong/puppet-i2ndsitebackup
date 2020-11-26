@@ -3,10 +3,12 @@ full_count: '<%= @config['full_count'] || '2' %>'
 gpg_key: '<%= @config['gpg_key'] %>'
 passphrase: '<%= @config['gpg_passphrase'] %>'
 source_root: '<%= @config['source_root'] %>'
-target_root: '<%= @config['target_root'] %>'
-target_host: '<%= @config['target_host'] %>'
-target_user: '<%= @config['target_user'] %>'
-stop_hour: <%= @config['stop_hour'] %>
+hosts:
+<% @config['hosts'].keys.sort do |host| -%>
+  '<%= host %>':
+    root: '<%= @config['hosts'][host]['root'] %>'
+    user: '<%= @config['hosts'][host]['user'] %>'
+<% end -%>
 archive_dir: '<%= @config['archive_dir'] %>'
 targets:
 <% @config['targets'].keys.sort.each do |k| -%>

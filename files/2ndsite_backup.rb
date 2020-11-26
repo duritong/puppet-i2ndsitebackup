@@ -30,17 +30,19 @@ class DuplicityRunner
     nt = ft = nil
     while (ft.nil? || nt != ft ) do
       ft ||= nt
-      nt = next_target
-      puts "#{Time.now} #{nt['subtarget']}"
-      res = true
-      with_environment('PASSPHRASE' => options['passphrase']) do
-        commands(target_id(nt['subtarget'])).each do |cmd|
-          res = res && system(cmd)
+      options['hosts'].keys.each do |host|
+        nt = next_target(host)
+        puts "#{Time.now} #{host} #{nt['subtarget']}"
+        res = {}
+        res[host] = true
+        with_environment('PASSPHRASE' => options['passphrase']) do
+          commands(host, target_id(nt['subtarget'])).each do |cmd|
+            res[host] = res[host] && system(cmd)
+          end
         end
+        break if !res[host] && !soft_failing_targets.include?(nt['subtarget'])
+        store_target(host,nt)
       end
-      break if !res && !soft_failing_targets.include?(nt['subtarget'])
-      store_target(nt)
-      break if Time.now.hour >= (options['stop_hour']||23).to_i
     end
   end
 
@@ -58,12 +60,12 @@ class DuplicityRunner
     end
   end
 
-  def commands(target)
-    tu = options['target_user']
-    th = options['target_host']
+  def commands(host,target)
+    tu = options['hosts'][host]['user']
+    th = host
     ssh_host, ssh_port = th.split(':',2)
     ssh_port ||= '22'
-    td = File.join(options['target_root'],target)
+    td = File.join(options['hosts'][host]['root'],target)
     tdp = File.dirname(td)
     ts = "rsync://#{tu}@#{th}/#{td}"
     du = "--ssh-options '-oIdentityFile=/opt/2ndsite_backup/duplicity_key' --encrypt-key #{options['gpg_key']} --sign-key #{options['gpg_key']} --tempdir /data/duplicity_archive/tmp"
@@ -85,8 +87,8 @@ class DuplicityRunner
     (Dir[File.join(options['source_root'],target)+(1..targets[target]).inject(""){|glob,l| "#{glob}/*" }]-[File.join(options['source_root'],target,'lost+found')]).sort
   end
 
-  def next_target
-    return first_target if !File.exist?('/opt/2ndsite_backup/state.yml') || (ls = last_state)['target'].nil?
+  def next_target(host)
+    return first_target if !File.exist?('/opt/2ndsite_backup/state.yml') || (ls = last_state(host))['target'].nil?
     stargets = subtargets(ls['target'])
     index = stargets.index(ls['subtarget'])
     if index && n_subtarget=stargets[index+1]
@@ -105,12 +107,22 @@ class DuplicityRunner
     { 'target' => targets.keys.first, 'subtarget' => subtargets(targets.keys.first).first }
   end
 
-  def last_state
-    YAML.load_file('/opt/2ndsite_backup/state.yml')
+  def last_state(host)
+    load_last_state unless @last_state
+    @last_state[host] ||= {}
+  end
+  def load_last_state
+    @last_state = if File.readable?('/opt/2ndsite_backup/state.yml')
+      YAML.load_file('/opt/2ndsite_backup/state.yml')
+    else
+      {}
+    end
   end
 
-  def store_target(target)
-    File.open('/opt/2ndsite_backup/state.yml','w'){|f| f << YAML.dump(target) }
+  def store_target(host, target)
+    load_last_state unless @last_state
+    @last_state[host] = target
+    File.open('/opt/2ndsite_backup/state.yml','w'){|f| f << YAML.dump(@last_state) }
   end
 
   def targets
