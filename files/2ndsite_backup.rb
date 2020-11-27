@@ -26,24 +26,36 @@ class DuplicityRunner
     end
   end
   private
+  # loop over all targets until done
+  # or until failing
+  # run each target per host
+  # if a target fails retry 3 times
+  # if all hosts fail 3 times abort
   def run_targets
-    nt = ft = nil
-    while (ft.nil? || nt != ft ) do
-      ft ||= nt
+    next_target = {}
+    first_target = {}
+    while (first_target.values.none? || next_target.keys.all?{|h| next_target[h] != first_target[h] } ) do
+      tries = Hash.new(0)
       options['hosts'].keys.each do |host|
-        nt = next_target(host)
-        puts "#{Time.now} #{host} #{nt['subtarget']}"
-        res = {}
-        res[host] = true
+        next if tries[host] > 3
+        first_target[host] ||= next_target[host]
+        next_target[host] = get_next_target(host)
+        puts "#{Time.now} #{host} #{next_target[host]['subtarget']}"
+        res = true
         with_environment('PASSPHRASE' => options['passphrase']) do
-          commands(host, target_id(nt['subtarget'])).each do |cmd|
+          commands(host, target_id(next_target[host]['subtarget'])).each do |cmd|
             #puts cmd
-            res[host] = res[host] && system(cmd)
+            res = res && system(cmd)
           end
         end
-        break if !res[host] && !soft_failing_targets.include?(nt['subtarget'])
-        store_target(host,nt)
+        if res
+          store_target(host,next_target[host])
+        else
+          tries[host] += 1
+        end
       end
+      # abort if all hosts have more than 3 failing tries
+      break if tries.values.all?{|v| v > 3 }
     end
   end
 
@@ -97,7 +109,7 @@ class DuplicityRunner
     (Dir[File.join(options['source_root'],target)+(1..targets[target]).inject(""){|glob,l| "#{glob}/*" }]-[File.join(options['source_root'],target,'lost+found')]).sort
   end
 
-  def next_target(host)
+  def get_next_target(host)
     return first_target if !File.exist?('/opt/2ndsite_backup/state.yml') || (ls = last_state(host))['target'].nil?
     stargets = subtargets(ls['target'])
     index = stargets.index(ls['subtarget'])
@@ -141,15 +153,6 @@ class DuplicityRunner
 
   def lockfile
     @lockfile ||= '/opt/2ndsite_backup/run.lock'
-  end
-
-  def soft_failing_targets
-    @soft_failing_targets ||= load_soft_failing_targets
-  end
-
-  def load_soft_failing_targets
-    file = '/opt/2ndsite_backup/soft_failing_targets.yml'
-    (File.exists?(file) ? YAML.load_file(file) : nil) || []
   end
 
   def with_environment(variables={})
