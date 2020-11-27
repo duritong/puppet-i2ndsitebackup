@@ -37,6 +37,7 @@ class DuplicityRunner
         res[host] = true
         with_environment('PASSPHRASE' => options['passphrase']) do
           commands(host, target_id(nt['subtarget'])).each do |cmd|
+            #puts cmd
             res[host] = res[host] && system(cmd)
           end
         end
@@ -67,11 +68,20 @@ class DuplicityRunner
     ssh_port ||= '22'
     td = File.join(options['hosts'][host]['root'],target)
     tdp = File.dirname(td)
-    ts = "rsync://#{tu}@#{th}/#{td}"
-    du = "--ssh-options '-oIdentityFile=/opt/2ndsite_backup/duplicity_key' --encrypt-key #{options['gpg_key']} --sign-key #{options['gpg_key']} --tempdir /data/duplicity_archive/tmp"
+    tdpp = File.dirname(tdp)
+    du = "--ssh-options '-oIdentityFile=/opt/2ndsite_backup/duplicity_key -oPort=#{ssh_port}' --encrypt-key #{options['gpg_key']} --sign-key #{options['gpg_key']} --tempdir /data/duplicity_archive/tmp/#{ssh_host}-#{ssh_port}"
     # we don't want to blindly create the whole tree, because this might mean the volume is not
     # ready
-    [ "ssh -i /opt/2ndsite_backup/duplicity_key -p #{ssh_port} #{tu}@#{ssh_host} '(test -d #{tdp} || mkdir #{tdp}) && (test -d #{td} || mkdir #{td})'",
+    cmds = []
+    if options['hosts'][host]['backend'] == 'ssh'
+      ts = "rsync://#{tu}@#{th}/#{td}"
+      cmds << "ssh -i /opt/2ndsite_backup/duplicity_key -p #{ssh_port} #{tu}@#{ssh_host} '(test -d #{tdpp} || mkdir #{tdpp}) && (test -d #{tdp} || mkdir #{tdp}) && (test -d #{td} || mkdir #{td})'"
+    else
+      ts = "sftp://#{tu}@#{th}/#{td}"
+      sftp_cmd = "sftp -b - -oidentityfile=/opt/2ndsite_backup/duplicity_key -P #{ssh_port} #{tu}@#{ssh_host}"
+      cmds << "(echo 'chdir /backup' | #{sftp_cmd}) && (echo 'chdir #{tdpp}' | #{sftp_cmd} || echo 'mkdir #{tdpp}' | #{sftp_cmd}) && (echo 'chdir #{tdp}' | #{sftp_cmd} || echo 'mkdir #{tdp} | #{sftp_cmd}) && (echo 'chdir #{td}' | #{sftp_cmd} || echo 'mkdir #{tdp} | #{sftp_cmd})"
+    end
+    cmds + [
       "duplicity cleanup #{archive_dir}--extra-clean --force #{du} #{ts}",
       "duplicity remove-all-but-n-full #{options['full_count']} #{archive_dir}--force #{du} #{ts}",
       "duplicity #{archive_dir}--full-if-older-than #{options['incremental_days']}D #{du} #{File.join(options['source_root'],target)} #{ts}",

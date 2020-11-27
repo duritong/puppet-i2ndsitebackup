@@ -12,6 +12,12 @@ options = YAML.load_file('/opt/2ndsite_backup/options.yml')
 host=ARGV.shift
 src=ARGV.shift
 time=ARGV.shift
+
+unless options['hosts'][host]
+  puts "No such host '#{host}' configured. Configured hosts: #{options['hosts'].keys.join(', ')}"
+  exit 1
+end
+
 if options['archive_dir']
   target = File.join(File.join(options['archive_dir'],'restore'),File.basename(src))
   archive_dir = "--archive-dir #{options['archive_dir']} --tempdir #{File.join(options['archive_dir'],'tmp')} "
@@ -24,7 +30,9 @@ puts "Starting restore..."
 old_value = ENV['PASSPHRASE']
 begin
  ENV['PASSPHRASE'] = options['passphrase']
- system("duplicity restore #{archive_dir}--restore-time #{time} --ssh-options '-oIdentityFile=/opt/2ndsite_backup/duplicity_key' --encrypt-key #{options['gpg_key']} --sign-key #{options['gpg_key']} rsync://#{options['hosts'][host]['user']}@#{host}/#{options['hosts'][host]['root']}/#{src}/ #{target}")
+ proto = options['hosts'][host]['backend'] == 'ssh' ? 'rsync' : 'sftp'
+ ssh_host, ssh_port = host.split(':',2)
+ system("duplicity restore #{archive_dir}--restore-time #{time} --ssh-options '-oIdentityFile=/opt/2ndsite_backup/duplicity_key -oPort=#{ssh_port}' --encrypt-key #{options['gpg_key']} --sign-key #{options['gpg_key']} #{proto}://#{options['hosts'][host]['user']}@#{ssh_host}/#{options['hosts'][host]['root']}/#{src}/ #{target}")
 ensure
   ENV['PASSPHRASE'] = old_value
 end

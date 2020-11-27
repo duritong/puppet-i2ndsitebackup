@@ -8,6 +8,7 @@ hosts:
   '<%= host %>':
     root: '<%= @config['hosts'][host]['root'] %>'
     user: '<%= @config['hosts'][host]['user'] %>'
+    backend: '<%= @config['hosts'][host]['backend'] %>'
 <% end -%>
 archive_dir: '<%= @config['archive_dir'] %>'
 targets:
