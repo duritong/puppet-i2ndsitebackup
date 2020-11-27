@@ -55,7 +55,7 @@ class DuplicityRunner
         end
       end
       # abort if all hosts have more than 3 failing tries
-      break if tries.values.all?{|v| v > 3 }
+      break if !tries.empty? && tries.values.all?{|v| v > 3 }
     end
   end
 
