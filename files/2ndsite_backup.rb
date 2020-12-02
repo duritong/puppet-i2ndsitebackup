@@ -2,6 +2,7 @@
 
 require 'singleton'
 require 'yaml'
+require 'digest/md5'
 
 class DuplicityRunner
 
@@ -96,8 +97,16 @@ class DuplicityRunner
     cmds + [
       "duplicity cleanup #{archive_dir}--extra-clean --force #{du} #{ts}",
       "duplicity remove-all-but-n-full #{options['full_count']} #{archive_dir}--force #{du} #{ts}",
-      "duplicity #{archive_dir}--full-if-older-than #{options['incremental_days']}D #{du} #{File.join(options['source_root'],target)} #{ts}",
+      "duplicity #{archive_dir}--full-if-older-than #{incremental_days(target)}D #{du} #{File.join(options['source_root'],target)} #{ts}",
     ]
+  end
+
+  # spread the next full between 20days around the configured incremental_days
+  # use target as seed so we get a constant random offset. this avoids
+  # to have large full repushes all on the same day - rather spread accross 20d
+  def incremental_days(target)
+    seed = Digest::MD5.hexdigest([target,options['incremental_days']].join(':')).hex
+    options['incremental_days'].to_i + (Random.new(seed).rand(20) - 10)
   end
 
 
