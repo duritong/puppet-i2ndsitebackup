@@ -100,7 +100,7 @@ class DuplicityRunner
       cmds << "(echo 'chdir /backup' | #{sftp_cmd}) && (echo 'chdir #{tdpp}' | #{sftp_cmd} || echo 'mkdir #{tdpp}' | #{sftp_cmd}) && (echo 'chdir #{tdp}' | #{sftp_cmd} || echo 'mkdir #{tdp} | #{sftp_cmd}) && (echo 'chdir #{td}' | #{sftp_cmd} || echo 'mkdir #{tdp} | #{sftp_cmd})"
     end
     cmds + [
-      "duplicity cleanup #{archive_dir}--extra-clean --force #{du} #{ts}",
+      "duplicity cleanup #{archive_dir} --force #{du} #{ts}",
       "duplicity remove-all-but-n-full #{options['full_count']} #{archive_dir}--force #{du} #{ts}",
       "duplicity #{archive_dir}--full-if-older-than #{incremental_days(target)}D #{du} #{File.join(options['source_root'],target)} #{ts}",
     ]
