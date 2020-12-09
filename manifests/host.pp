@@ -88,6 +88,13 @@ class i2ndsitebackup::host(
   }
   include clamav::backup_webhosting_scan
   include ibackup::disks
+  $tmp_dirs = $config['hosts'].keys.map |$h| {
+    if $h =~ /:\d+$/ {
+      "${config['archive_dir']}/tmp/${h.split(':').join('-')}"
+    } else {
+      "${config['archive_dir']}/tmp/${h}-22"
+    }
+  }
   selinux::fcontext{
     "${config['archive_dir']}(/.*)?":
       setype => 'tmp_t',
@@ -99,12 +106,13 @@ class i2ndsitebackup::host(
       seltype => 'tmp_t',
       require => File['/data'],
   } -> file{
-    "${config['archive_dir']}/tmp":
+    default:
       ensure  => directory,
       owner   => root,
       group   => 0,
       mode    => '0600',
-      seltype => 'tmp_t',
+      seltype => 'tmp_t';
+    "${config['archive_dir']}/tmp":;
+    $tmp_dirs:;
   }
-
 }
