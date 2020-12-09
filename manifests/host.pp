@@ -12,30 +12,30 @@ class i2ndsitebackup::host(
   $ssh_keys = ssh_keygen("${key_path}/duplicity")
   file{
     '/opt/2ndsite_backup':
-      ensure  => directory,
-      owner   => root,
-      group   => 0,
-      mode    => '0600';
+      ensure => directory,
+      owner  => root,
+      group  => 0,
+      mode   => '0600';
     '/opt/2ndsite_backup/2ndsite_backup':
-      source  => 'puppet:///modules/i2ndsitebackup/2ndsite_backup.rb',
-      owner   => root,
-      group   => 0,
-      mode    => '0500';
+      source => 'puppet:///modules/i2ndsitebackup/2ndsite_backup.rb',
+      owner  => root,
+      group  => 0,
+      mode   => '0500';
     '/opt/2ndsite_backup/restore_backup':
-      source  => 'puppet:///modules/i2ndsitebackup/restore_backup.rb',
-      owner   => root,
-      group   => 0,
-      mode    => '0500';
+      source => 'puppet:///modules/i2ndsitebackup/restore_backup.rb',
+      owner  => root,
+      group  => 0,
+      mode   => '0500';
     '/opt/2ndsite_backup/options.yml':
       content => template('i2ndsitebackup/options.yml.erb'),
       owner   => root,
       group   => 0,
       mode    => '0400';
     '/opt/2ndsite_backup/soft_failing_targets.yml':
-      ensure  => present,
-      owner   => root,
-      group   => 0,
-      mode    => '0400';
+      ensure => present,
+      owner  => root,
+      group  => 0,
+      mode   => '0400';
     '/opt/2ndsite_backup/duplicity_key':
       content => $ssh_keys[0],
       owner   => root,
@@ -70,9 +70,9 @@ class i2ndsitebackup::host(
       mode    => '0600';
     "/root/.gnupg/${config['gpg_key']}.priv":
       content => file("${key_path}/${config['gpg_key']}.priv"),
-      owner  => root,
-      group  => 0,
-      mode   => '0600';
+      owner   => root,
+      group   => 0,
+      mode    => '0600';
   }
   exec{
     "import_pub_${config['gpg_key']}":
