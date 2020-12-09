@@ -81,13 +81,13 @@ class i2ndsitebackup::host(
       returns     => [0,2],
       subscribe   => File["/root/.gnupg/${config['gpg_key']}.pub"];
     "import_priv_${config['gpg_key']}":
-      command     => "gpg --import < /root/.gnupg/${config['gpg_key']}.priv",
+      command     => "gpg --batch --import < /root/.gnupg/${config['gpg_key']}.priv",
       refreshonly => true,
       returns     => [0,2],
       subscribe   => File["/root/.gnupg/${config['gpg_key']}.priv"];
   }
-  include ::clamav::backup_webhosting_scan
-  include ::ibackup::disks
+  include clamav::backup_webhosting_scan
+  include ibackup::disks
   selinux::fcontext{
     "${config['archive_dir']}(/.*)?":
       setype => 'tmp_t',
