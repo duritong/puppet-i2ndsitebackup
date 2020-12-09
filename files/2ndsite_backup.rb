@@ -77,12 +77,17 @@ class DuplicityRunner
   def commands(host,target)
     tu = options['hosts'][host]['user']
     th = host
-    if m = th.match(/:(\d+$)/)
+    if m = th.match(/^([^:]*):(\d+$)/)
       ssh_host = m[1]
       ssh_port = m[2]
     else
       ssh_host = th
       ssh_port = '22'
+    end
+    if ssh_host =~ /:/
+      rsync_host = "[#{ssh_host}]"
+    else
+      rsync_host = ssh_host
     end
     td = File.join(options['hosts'][host]['root'],target)
     tdp = File.dirname(td)
@@ -92,7 +97,7 @@ class DuplicityRunner
     # ready
     cmds = []
     if options['hosts'][host]['backend'] == 'ssh'
-      ts = "rsync://#{tu}@#{th}/#{td}"
+      ts = "rsync://'#{tu}@#{rsync_host}'#{td}"
       cmds << "ssh -i /opt/2ndsite_backup/duplicity_key -p #{ssh_port} #{tu}@#{ssh_host} '(test -d #{tdpp} || mkdir #{tdpp}) && (test -d #{tdp} || mkdir #{tdp}) && (test -d #{td} || mkdir #{td})'"
     else
       ts = "sftp://#{tu}@#{th}/#{td}"
