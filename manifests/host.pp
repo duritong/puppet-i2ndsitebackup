@@ -8,7 +8,7 @@ class i2ndsitebackup::host(
   require duplicity
   require logrotate
 
-  $key_path = "${$key_basepath}/i2ndsitebackup/keys/${fqdn}"
+  $key_path = "${$key_basepath}/i2ndsitebackup/keys/${facts['fqdn']}"
   $ssh_keys = ssh_keygen("${key_path}/duplicity")
   file{
     '/opt/2ndsite_backup':
@@ -32,7 +32,7 @@ class i2ndsitebackup::host(
       group   => 0,
       mode    => '0400';
     '/opt/2ndsite_backup/soft_failing_targets.yml':
-      ensure => present,
+      ensure => file,
       owner  => root,
       group  => 0,
       mode   => '0400';
