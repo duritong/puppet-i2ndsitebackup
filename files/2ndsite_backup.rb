@@ -92,7 +92,7 @@ class DuplicityRunner
     td = File.join(options['hosts'][host]['root'],target)
     tdp = File.dirname(td)
     tdpp = File.dirname(tdp)
-    du = "--ssh-options '-oIdentityFile=/opt/2ndsite_backup/duplicity_key -oPort=#{ssh_port}' --encrypt-key #{options['gpg_key']} --sign-key #{options['gpg_key']} --tempdir /data/duplicity_archive/tmp/#{ssh_host}-#{ssh_port}"
+    du = "--allow-source-mismatch --ssh-options '-oIdentityFile=/opt/2ndsite_backup/duplicity_key -oPort=#{ssh_port}' --encrypt-key #{options['gpg_key']} --sign-key #{options['gpg_key']} --tempdir /data/duplicity_archive/tmp/#{ssh_host}-#{ssh_port}"
     # we don't want to blindly create the whole tree, because this might mean the volume is not
     # ready
     cmds = []
