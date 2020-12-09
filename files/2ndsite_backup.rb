@@ -77,8 +77,13 @@ class DuplicityRunner
   def commands(host,target)
     tu = options['hosts'][host]['user']
     th = host
-    ssh_host, ssh_port = th.split(':',2)
-    ssh_port ||= '22'
+    if m = th.match(/:(\d+$)/)
+      ssh_host = m[1]
+      ssh_port = m[2]
+    else
+      ssh_host = th
+      ssh_port = '22'
+    end
     td = File.join(options['hosts'][host]['root'],target)
     tdp = File.dirname(td)
     tdpp = File.dirname(tdp)
