@@ -97,7 +97,7 @@ class DuplicityRunner
     # ready
     cmds = []
     if options['hosts'][host]['backend'] == 'ssh'
-      ts = "rsync://'#{tu}@#{rsync_host}'#{td}"
+      ts = "rsync://'#{tu}@#{rsync_host}'/#{td}"
       cmds << "ssh -i /opt/2ndsite_backup/duplicity_key -p #{ssh_port} #{tu}@#{ssh_host} '(test -d #{tdpp} || mkdir #{tdpp}) && (test -d #{tdp} || mkdir #{tdp}) && (test -d #{td} || mkdir #{td})'"
     else
       ts = "sftp://#{tu}@#{th}/#{td}"
