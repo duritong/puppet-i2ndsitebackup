@@ -8,22 +8,33 @@ class DuplicityRunner
 
   include Singleton
 
-  def run
-    if File.exist?(lockfile)
-      pid = File.read(lockfile).chomp
-      if File.directory?("/proc/#{pid}")
-        STDERR.puts "Lockfile #{lockfile} exists with pid #{pid} and this process still seems to be running"
+  def run(hosts=nil)
+    if hosts
+      unless hosts.all?{|h| options['hosts'].key?(h) }
+        STDERR.puts "Some of the hosts '#{hosts.join(', ')}' are not known! Aborting..."
         exit 1
-      else
-        puts "Removing staled lockfile #{lockfile}"
+      end
+    else
+      hosts = options['hosts'].keys
+    end
+    hosts.each do |host|
+      lf = lockfile(host)
+      if File.exist?(lf)
+        pid = File.read(lf).chomp
+        if File.directory?("/proc/#{pid}")
+          STDERR.puts "Lockfile #{lf} exists with pid #{pid} and this process still seems to be running"
+          exit 1
+        else
+          puts "Removing staled lockfile #{lockfile}"
+        end
       end
     end
     begin
-      File.open(lockfile,'w'){|f| f << $$ }
+      hosts.each{|h| File.open(lockfile(h),'w'){|f| f << $$ } }
       cleanup_archive
-      run_targets
+      run_targets(hosts)
     ensure
-      File.delete(lockfile)
+      hosts.each{|h| File.delete(lockfile(h)) }
     end
   end
   private
@@ -32,12 +43,12 @@ class DuplicityRunner
   # run each target per host
   # if a target fails retry 3 times
   # if all hosts fail 3 times abort
-  def run_targets
+  def run_targets(hosts)
     next_target = {}
     first_target = {}
     while (first_target.values.none? || next_target.keys.all?{|h| next_target[h] != first_target[h] } ) do
       tries = Hash.new(0)
-      options['hosts'].keys.each do |host|
+      hosts.each do |host|
         next if tries[host] > 3
         first_target[host] ||= next_target[host]
         next_target[host] = get_next_target(host)
@@ -170,8 +181,9 @@ class DuplicityRunner
     options['targets']
   end
 
-  def lockfile
-    @lockfile ||= '/opt/2ndsite_backup/run.lock'
+  def lockfile(host)
+    @lockfile ||= {}
+    @lockfile[host] ||= "/opt/2ndsite_backup/run-#{host}.lock"
   end
 
   def with_environment(variables={})
@@ -190,4 +202,4 @@ class DuplicityRunner
   end
 end
 
-DuplicityRunner.instance.run
+DuplicityRunner.instance.run(ARGV)
