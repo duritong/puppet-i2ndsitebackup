@@ -34,7 +34,7 @@ class DuplicityRunner
       cleanup_archive
       run_targets(hosts)
     ensure
-      hosts.each{|h| File.delete(lockfile(h)) }
+      hosts.each{|h| File.delete(lockfile(h)) if File.exists?(lockfile(h)) }
     end
   end
   private

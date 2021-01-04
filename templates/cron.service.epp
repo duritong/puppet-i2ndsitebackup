@@ -16,4 +16,6 @@ PrivateTmp=true
 ProtectSystem=full
 
 ReadOnlyDirectories=/
-ReadWriteDirectories=<%= $archive_dir %>/tmp/%i-22
+ReadWriteDirectories=/run/2ndsite_backup/
+ReadWriteDirectories=/opt/2ndsite_backup/
+ReadWriteDirectories=<%= $archive_dir %>/tmp/%i-22/
