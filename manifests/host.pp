@@ -1,16 +1,15 @@
 # all the things needed on the pushing host
-class i2ndsitebackup::host(
+class i2ndsitebackup::host (
   $config,
   $cron_start_time  = '0 5 * * *',
   $key_basepath = '/etc/puppet/modules/site_securefile/files'
-){
+) {
   require gpg
   require duplicity
-  require logrotate
 
-  $key_path = "${$key_basepath}/i2ndsitebackup/keys/${facts['fqdn']}"
+  $key_path = "${$key_basepath}/i2ndsitebackup/keys/${facts['networking']['fqdn']}"
   $ssh_keys = ssh_keygen("${key_path}/duplicity")
-  file{
+  file {
     '/opt/2ndsite_backup':
       ensure => directory,
       owner  => root,
@@ -41,23 +40,6 @@ class i2ndsitebackup::host(
       owner   => root,
       group   => 0,
       mode    => '0400';
-    '/etc/cron.d/run_2ndsite_backup':
-      content => "${cron_start_time} root /opt/2ndsite_backup/2ndsite_backup >> /var/log/2ndsite_backup.log\n",
-      owner   => root,
-      group   => 0,
-      mode    => '0400';
-    '/etc/logrotate.d/2ndsite_backup':
-      content => "/var/log/2ndsite_backup*.log {
-  weekly
-  rotate 4
-  missingok
-  notifempty
-  compress
-  copytruncate
-}\n",
-      owner   => root,
-      group   => 0,
-      mode    => '0644';
     '/root/.gnupg':
       ensure => directory,
       owner  => root,
@@ -74,7 +56,22 @@ class i2ndsitebackup::host(
       group   => 0,
       mode    => '0600';
   }
-  exec{
+  require systemd::mail_on_failure
+
+  systemd::unit_file {
+    'i2ndsitebackup@.service':
+      content => epp('i2ndsitebackup/cron.service.epp',{ archive_dir => $config['archive_dir'] }),
+  }
+  $tmp_dirs = $config['hosts'].keys.each |$h| {
+    systemd::timer {
+      "i2ndsitebackup@${h}.timer":
+        timer_content => epp('i2ndsitebackup/cron.timer.epp'),
+        active        => true,
+        enable        => true,
+    }
+  }
+
+  exec {
     "import_pub_${config['gpg_key']}":
       command     => "gpg --import < /root/.gnupg/${config['gpg_key']}.pub",
       refreshonly => true,
@@ -89,23 +86,19 @@ class i2ndsitebackup::host(
   include clamav::backup_webhosting_scan
   include ibackup::disks
   $tmp_dirs = $config['hosts'].keys.map |$h| {
-    if $h =~ /:\d+$/ {
-      "${config['archive_dir']}/tmp/${h.split(':').join('-')}"
-    } else {
-      "${config['archive_dir']}/tmp/${h}-22"
-    }
+    "${config['archive_dir']}/tmp/${h}-22"
   }
-  selinux::fcontext{
+  selinux::fcontext {
     "${config['archive_dir']}(/.*)?":
       setype => 'tmp_t',
-  } -> disks::lv_mount{
+  } -> disks::lv_mount {
     'duplicity_archive':
       folder  => $config['archive_dir'],
       size    => pick($config['archive_size'],'20G'),
       mode    => '0700',
       seltype => 'tmp_t',
       require => File['/data'],
-  } -> file{
+  } -> file {
     default:
       ensure  => directory,
       owner   => root,

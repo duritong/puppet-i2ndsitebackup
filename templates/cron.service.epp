@@ -1,0 +1,19 @@
+<%- | Stdlib::Unixpath $archive_dir,
+| -%>
+[Unit]
+Description=i2ndsite backup cron for %i
+
+OnFailure=status_email_root@%n.service
+
+[Service]
+Type=oneshot
+SyslogIdentifier=i2ndsite-cron-%i
+
+ExecStart=/opt/2ndsite_backup/2ndsite_backup %i
+# security settings
+PrivateTmp=true
+
+ProtectSystem=full
+
+ReadOnlyDirectories=/
+ReadWriteDirectories=<%= $archive_dir %>/tmp/%i-22
