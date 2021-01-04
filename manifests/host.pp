@@ -62,7 +62,7 @@ class i2ndsitebackup::host (
     'i2ndsitebackup@.service':
       content => epp('i2ndsitebackup/cron.service.epp',{ archive_dir => $config['archive_dir'] }),
   }
-  $tmp_dirs = $config['hosts'].keys.each |$h| {
+  $config['hosts'].keys.each |$h| {
     systemd::timer {
       "i2ndsitebackup@${h}.timer":
         timer_content => epp('i2ndsitebackup/cron.timer.epp'),
