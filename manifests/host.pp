@@ -58,7 +58,10 @@ class i2ndsitebackup::host (
   }
   require systemd::mail_on_failure
 
-  systemd::unit_file {
+  systemd::tmpfile {
+    'i2ndsitebackup_run.conf':
+      content => 'd /run/2ndsite_backup 700 root root',
+  } -> systemd::unit_file {
     'i2ndsitebackup@.service':
       content => epp('i2ndsitebackup/cron.service.epp',{ archive_dir => $config['archive_dir'] }),
   }

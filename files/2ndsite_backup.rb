@@ -183,7 +183,7 @@ class DuplicityRunner
 
   def lockfile(host)
     @lockfile ||= {}
-    @lockfile[host] ||= "/opt/2ndsite_backup/run-#{host}.lock"
+    @lockfile[host] ||= "/run/2ndsite_backup/#{host}.lock"
   end
 
   def with_environment(variables={})
