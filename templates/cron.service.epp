@@ -18,4 +18,4 @@ ProtectSystem=full
 ReadOnlyDirectories=/
 ReadWriteDirectories=/run/2ndsite_backup/
 ReadWriteDirectories=/opt/2ndsite_backup/
-ReadWriteDirectories=<%= $archive_dir %>/tmp/%i-22/
+ReadWriteDirectories=<%= $archive_dir %>/
