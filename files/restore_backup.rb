@@ -30,6 +30,7 @@ puts "Starting restore..."
 old_value = ENV['PASSPHRASE']
 begin
  ENV['PASSPHRASE'] = options['passphrase']
+ ENV['GNUPGHOME'] = options['gnupghome']
  proto = options['hosts'][host]['backend'] == 'ssh' ? 'rsync' : 'sftp'
  ssh_host, ssh_port = host.split(':',2)
  system("duplicity restore #{archive_dir}--restore-time #{time} --ssh-options '-oIdentityFile=/opt/2ndsite_backup/duplicity_key -oPort=#{ssh_port}' --encrypt-key #{options['gpg_key']} --sign-key #{options['gpg_key']} #{proto}://#{options['hosts'][host]['user']}@#{ssh_host}/#{options['hosts'][host]['root']}/#{src}/ #{target}")

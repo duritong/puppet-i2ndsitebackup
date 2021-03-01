@@ -54,7 +54,7 @@ class DuplicityRunner
         next_target[host] = get_next_target(host)
         puts "#{Time.now} #{host} #{next_target[host]['subtarget']}"
         res = true
-        with_environment('PASSPHRASE' => options['passphrase']) do
+        with_environment('PASSPHRASE' => options['passphrase'], 'GNUPGHOME' => options['gnupghome']) do
           commands(host, target_id(next_target[host]['subtarget'])).each do |cmd|
             #puts cmd
             res = res && system(cmd)

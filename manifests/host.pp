@@ -40,17 +40,17 @@ class i2ndsitebackup::host (
       owner   => root,
       group   => 0,
       mode    => '0400';
-    '/root/.gnupg':
+    '/opt/2ndsite_backup/gnupg':
       ensure => directory,
       owner  => root,
       group  => 0,
       mode   => '0600';
-    "/root/.gnupg/${config['gpg_key']}.pub":
+    "/opt/2ndsite_backup/gnupg/${config['gpg_key']}.pub":
       content => file("${key_path}/${config['gpg_key']}.pub"),
       owner   => root,
       group   => 0,
       mode    => '0600';
-    "/root/.gnupg/${config['gpg_key']}.priv":
+    "/opt/2ndsite_backup/gnupg/${config['gpg_key']}.priv":
       content => file("${key_path}/${config['gpg_key']}.priv"),
       owner   => root,
       group   => 0,
@@ -76,15 +76,17 @@ class i2ndsitebackup::host (
 
   exec {
     "import_pub_${config['gpg_key']}":
-      command     => "gpg --import < /root/.gnupg/${config['gpg_key']}.pub",
+      command     => "gpg --import < /opt/2ndsite_backup/gnupg/${config['gpg_key']}.pub",
+      environment => ['GNUPGHOME=/opt/2ndsite_backup/gnupg'],
       refreshonly => true,
       returns     => [0,2],
-      subscribe   => File["/root/.gnupg/${config['gpg_key']}.pub"];
+      subscribe   => File["/opt/2ndsite_backup/gnupg/${config['gpg_key']}.pub"];
     "import_priv_${config['gpg_key']}":
-      command     => "gpg --batch --import < /root/.gnupg/${config['gpg_key']}.priv",
+      command     => "gpg --batch --import < /opt/2ndsite_backup/gnupg/${config['gpg_key']}.priv",
+      environment => ['GNUPGHOME=/opt/2ndsite_backup/gnupg'],
       refreshonly => true,
       returns     => [0,2],
-      subscribe   => File["/root/.gnupg/${config['gpg_key']}.priv"];
+      subscribe   => File["/opt/2ndsite_backup/gnupg/${config['gpg_key']}.priv"];
   }
   include clamav::backup_webhosting_scan
   include ibackup::disks
