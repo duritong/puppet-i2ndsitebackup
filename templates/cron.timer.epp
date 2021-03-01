@@ -6,3 +6,5 @@ OnCalendar=<%= $on_calendar %>
 <% if $randomize_delay_sec { -%>
 RandomizedDelaySec=<%= $randomize_delay_sec %>
 <% } -%>
+[Install]
+WantedBy=timers.target
