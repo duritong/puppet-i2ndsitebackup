@@ -6,6 +6,7 @@ class i2ndsitebackup::host (
 ) {
   require gpg
   require duplicity
+  require tmpwatch
 
   $key_path = "${$key_basepath}/i2ndsitebackup/keys/${facts['networking']['fqdn']}"
   $ssh_keys = ssh_keygen("${key_path}/duplicity")
