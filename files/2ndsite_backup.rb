@@ -112,7 +112,7 @@ class DuplicityRunner
       cmds << "ssh -i /opt/2ndsite_backup/duplicity_key -p #{ssh_port} #{tu}@#{ssh_host} '(test -d #{tdpp} || mkdir #{tdpp}) && (test -d #{tdp} || mkdir #{tdp}) && (test -d #{td} || mkdir #{td})'"
     else
       ts = "sftp://#{tu}@#{th}/#{td}"
-      sftp_cmd = "sftp -b - -oidentityfile=/opt/2ndsite_backup/duplicity_key -P #{ssh_port} #{tu}@#{ssh_host}"
+      sftp_cmd = "sftp -b - -oUserKnownHostsFile=/opt/2ndsite_backup/known_hosts -oidentityfile=/opt/2ndsite_backup/duplicity_key -P #{ssh_port} #{tu}@#{ssh_host}"
       cmds << "(echo 'chdir /backup' | #{sftp_cmd}) && (echo 'chdir #{tdpp}' | #{sftp_cmd} || echo 'mkdir #{tdpp}' | #{sftp_cmd}) && (echo 'chdir #{tdp}' | #{sftp_cmd} || echo 'mkdir #{tdp} | #{sftp_cmd}) && (echo 'chdir #{td}' | #{sftp_cmd} || echo 'mkdir #{tdp} | #{sftp_cmd})"
     end
     cmds + [
