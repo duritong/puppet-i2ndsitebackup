@@ -1,13 +1,9 @@
 # things to be setup on the pushing host
 class i2ndsitebackup::receiver(
-  Stdlib::Fqdn
-    $source_host,
-  String
-    $user_password,
-  Stdlib::Unixpath
-    $ssh_key_basepath = '/etc/puppet/modules/site_securefile/files',
-  Integer
-    $cleanup_days     = 360, # (1 + 2) * 120 = (1 + fullcount) * incremental_days
+  Stdlib::Fqdn $source_host,
+  String $user_password,
+  Stdlib::Unixpath $ssh_key_basepath = '/etc/puppet/modules/site_securefile/files',
+  Integer $cleanup_days     = 360, # (1 + 2) * 120 = (1 + fullcount) * incremental_days
 ){
 
   require rsync::client
