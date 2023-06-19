@@ -3,7 +3,10 @@ class i2ndsitebackup::receiver(
   Stdlib::Fqdn $source_host,
   String $user_password,
   Stdlib::Unixpath $ssh_key_basepath = '/etc/puppet/modules/site_securefile/files',
-  Integer $cleanup_days     = 360, # (1 + 2) * 120 = (1 + fullcount) * incremental_days
+  Integer $cleanup_days = 360, # (1 + 2) * 120 = (1 + fullcount) * incremental_days
+  Stdlib::Unixpath $fs_device = '/dev/storage/2ndsite-duplicity',
+  String $fstype = 'xfs',
+  String $fs_options = 'defaults,noexec,nodev',
 ){
 
   require rsync::client
@@ -29,9 +32,9 @@ class i2ndsitebackup::receiver(
     mode   => '0600';
   } -> mount{'sndsite_disk':
     name    => '/srv/backup',
-    device  => '/dev/mapper/2ndsite_backup',
-    fstype  => 'ext4',
-    options => 'defaults,noexec,nodev,noauto',
+    device  => $fs_device,
+    fstype  => $fstype,
+    options => $fs_options,
   } -> file{
     '/etc/cron.monthly/backup_cleanup.sh':
       content => template('i2ndsitebackup/cleanup_receiver.sh.erb'),
