@@ -4,7 +4,7 @@ class i2ndsitebackup::receiver(
   String $user_password,
   Stdlib::Unixpath $ssh_key_basepath = '/etc/puppet/modules/site_securefile/files',
   Integer $cleanup_days = 360, # (1 + 2) * 120 = (1 + fullcount) * incremental_days
-  Stdlib::Unixpath $fs_device = '/dev/storage/2ndsite-duplicity',
+  Stdlib::Unixpath $fs_device = '/dev/storage/2ndsite_duplicity',
   String $fstype = 'xfs',
   String $fs_options = 'defaults,noexec,nodev',
 ){
