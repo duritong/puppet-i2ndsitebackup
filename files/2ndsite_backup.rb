@@ -75,13 +75,16 @@ class DuplicityRunner
     target.sub("#{options['source_root']}/",'')
   end
 
-  def archive_dir
-    options['archive_dir'] ?  "--archive-dir #{options['archive_dir']} --tempdir #{File.join(options['archive_dir'],'tmp')} " : ''
+  def archive_dir_path(host)
+    "#{options['archive_dir']}/archive/#{host}"
   end
-  def cleanup_archive
+  def archive_dir(host)
+    options['archive_dir'] ?  "--archive-dir #{archive_dir_path(host)} --tempdir #{File.join(options['archive_dir'],'tmp')} " : ''
+  end
+  def cleanup_archive(host)
     if options['archive_dir']
-      puts "Cleaning up archive_dir #{options['archive_dir']}"
-      system("tmpwatch -m #{options['incremental_days'].to_i*options['full_count'].to_i + 1}d #{options['archive_dir']}")
+      puts "Cleaning up archive_dir #{archive_dir_path(host)}"
+      system("tmpwatch -m #{options['incremental_days'].to_i*options['full_count'].to_i + 1}d #{archive_dir_path(host)}")
     end
   end
 
@@ -116,9 +119,9 @@ class DuplicityRunner
       cmds << "(echo 'chdir /backup' | #{sftp_cmd}) && (echo 'chdir #{tdpp}' | #{sftp_cmd} || echo 'mkdir #{tdpp}' | #{sftp_cmd}) && (echo 'chdir #{tdp}' | #{sftp_cmd} || echo 'mkdir #{tdp} | #{sftp_cmd}) && (echo 'chdir #{td}' | #{sftp_cmd} || echo 'mkdir #{tdp} | #{sftp_cmd})"
     end
     cmds + [
-      "duplicity cleanup #{archive_dir} --force #{du} #{ts}",
-      "duplicity remove-all-but-n-full #{options['full_count']} #{archive_dir}--force #{du} #{ts}",
-      "duplicity #{archive_dir}--full-if-older-than #{incremental_days(target)}D #{du} #{File.join(options['source_root'],target)} #{ts}",
+      "duplicity cleanup #{archive_dir(host)} --force #{du} #{ts}",
+      "duplicity remove-all-but-n-full #{options['full_count']} #{archive_dir(host)}--force #{du} #{ts}",
+      "duplicity #{archive_dir(host)}--full-if-older-than #{incremental_days(target)}D #{du} #{File.join(options['source_root'],target)} #{ts}",
     ]
   end
 
