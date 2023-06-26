@@ -31,7 +31,7 @@ class DuplicityRunner
     end
     begin
       hosts.each{|h| File.open(lockfile(h),'w'){|f| f << $$ } }
-      cleanup_archive
+      hosts.each{|h| cleanup_archive(h) }
       run_targets(hosts)
     ensure
       hosts.each{|h| File.delete(lockfile(h)) if File.exists?(lockfile(h)) }
